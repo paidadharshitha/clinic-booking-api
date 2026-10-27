@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/paidadharshitha/clinic-booking-api/actions/workflows/ci.yml/badge.svg)](https://github.com/paidadharshitha/clinic-booking-api/actions/workflows/ci.yml)
 
-A small FastAPI service for publishing clinic appointment slots and booking them safely. SQLite transactions coordinate competing requests, and a database constraint guarantees **at most one confirmed booking per slot**.
+A FastAPI service and visual interactive guide for publishing clinic appointment slots and booking them safely. SQLite transactions coordinate competing requests, and a database constraint guarantees **at most one confirmed booking per slot**.
 
 Python 3.11+ · FastAPI · SQLAlchemy 2.x · Pydantic · SQLite · pytest / HTTPX
 
@@ -20,7 +20,11 @@ python -m pip install --no-deps -e .
 uvicorn clinic_api.main:app --reload
 ```
 
-Open [interactive API docs](http://127.0.0.1:8000/docs), [ReDoc](http://127.0.0.1:8000/redoc), or the [OpenAPI schema](http://127.0.0.1:8000/openapi.json). The database and its parent directory are created automatically on startup.
+Open the [visual interactive guide](http://localhost:8000/) to explore the booking flow and make live requests. [Swagger API docs](http://localhost:8000/docs), [ReDoc](http://localhost:8000/redoc), and the [OpenAPI schema](http://localhost:8000/openapi.json) remain available.
+
+The guide's live actions use the same API and database as other clients. Created clinics, slots, and bookings persist after refreshing the page or restarting the server; use synthetic patient details while trying it. The database and its parent directory are created automatically on startup.
+
+The guide's HTML, CSS, JavaScript, and Nunito Sans font are bundled with the Python package. The font's [SIL Open Font License](clinic_api/static/OFL-NunitoSans.txt) is included.
 
 New databases use the SQLAlchemy schema. Existing version 1 databases are upgraded transactionally to version 2, adding the optional address and patient contact fields while preserving IDs, timestamps, and booking history. No separate initialization command is needed.
 
@@ -40,7 +44,7 @@ See [.env.example](.env.example) for configuration. The application reads enviro
 docker compose up --build
 ```
 
-The API runs at `http://127.0.0.1:8000` as a non-root user. The named volume `clinic-booking-data` persists `/app/data/bookings.db` across container replacements. Stop it with `docker compose down`; adding `--volumes` also deletes the stored appointments.
+The guide and API run at `http://localhost:8000` as a non-root user. The named volume `clinic-booking-data` persists `/app/data/bookings.db` across container replacements. Stop it with `docker compose down`; adding `--volumes` also deletes the stored appointments.
 
 ## Booking rules
 
@@ -262,6 +266,7 @@ clinic_api/
     bookings.py Booking creation, filtering, and cancellation
   services/
     booking_service.py  Booking rules and transactional operations
+  static/       Packaged HTML, CSS, and JavaScript for the guide at /
 tests/          API, persistence, and concurrency tests
 ```
 

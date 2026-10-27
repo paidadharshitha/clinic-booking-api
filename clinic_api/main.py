@@ -9,7 +9,8 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException
 
 from clinic_api.api import router
@@ -76,6 +77,12 @@ def create_app(
     )
     application.state.database = database
     application.state.service = BookingService(database, clock or utc_now)
+    static_directory = Path(__file__).resolve().parent / "static"
+    application.mount("/assets", StaticFiles(directory=static_directory), name="assets")
+
+    @application.get("/", response_class=FileResponse, include_in_schema=False)
+    def interactive_guide() -> FileResponse:
+        return FileResponse(static_directory / "index.html", media_type="text/html")
 
     @application.exception_handler(DomainError)
     async def handle_domain_error(request: Request, error: DomainError) -> JSONResponse:
