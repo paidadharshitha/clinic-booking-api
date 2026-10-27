@@ -1,6 +1,8 @@
-"""The packaged interactive guide and API remain available from one application."""
+"""The booking portal, developer guide, and API share one application."""
 
 from html.parser import HTMLParser
+
+import pytest
 
 
 class AssetLinks(HTMLParser):
@@ -26,19 +28,29 @@ class AssetLinks(HTMLParser):
                 self.fonts.append(href)
 
 
-def test_interactive_guide_and_linked_assets_load_outside_repository(client, monkeypatch, tmp_path):
+@pytest.mark.parametrize(
+    ("page", "stylesheet", "script"),
+    [
+        ("/", "/assets/portal.css", "/assets/portal.js"),
+        ("/guide", "/assets/styles.css", "/assets/app.js"),
+    ],
+    ids=["booking-portal", "api-playground"],
+)
+def test_pages_and_linked_assets_load_outside_repository(
+    client, monkeypatch, tmp_path, page, stylesheet, script
+):
     # Package assets must resolve in a wheel or container, independently of cwd.
     monkeypatch.chdir(tmp_path)
-    response = client.get("/")
+    response = client.get(page)
 
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/html")
     assert "<title>" in response.text
     links = AssetLinks()
     links.feed(response.text)
-    assert links.stylesheets, "The guide must load its packaged stylesheet."
-    assert links.scripts, "The guide must load its interactive JavaScript."
-    assert links.fonts, "The guide must load its packaged font."
+    assert stylesheet in links.stylesheets, "Each page must load its own packaged stylesheet."
+    assert script in links.scripts, "Each page must load its own interactive JavaScript."
+    assert links.fonts, "Each page must load its packaged font."
     for path in links.stylesheets + links.scripts + links.fonts:
         asset = client.get(path)
         assert asset.status_code == 200, path
@@ -61,6 +73,7 @@ def test_frontend_preserves_api_docs_health_and_schema(client):
     assert response.status_code == 200
     paths = response.json()["paths"]
     assert "/" not in paths
+    assert "/guide" not in paths
     assert not any(path.startswith("/assets") for path in paths)
     assert "/bookings" in paths
     assert "/clinics/{clinic_id}/slots" in paths

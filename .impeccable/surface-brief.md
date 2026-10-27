@@ -1,11 +1,23 @@
-# Local API overview
+# Clinic booking portal
 
-Mode: Read, with small Operate interactions for trying the API.
+Mode: Operate.
 
-The user's supplied image is the visual authority. Build directly from that fixed reference; no new identity or concept selection is needed. The interface answers how the booking API works and lets reviewers verify it in the same page.
+## Purpose
 
-Desktop composition: three columns, approximately 36/38/26, with a large heart/pulse hero and supporting stack/endpoints/schema on the left; sequential API examples and a live concurrency console in the middle; validation, locking explanation, features and a health-themed sign-off on the right. Keep pale tinted surfaces, navy lettering, compact code, fine borders, and clear rhythm. At mobile widths stack the regions without horizontal page overflow.
+The user explicitly requested removal of the information-heavy developer-demo drawback. Patients choose a clinic and time, enter name/email and receive a real booking confirmation through ordinary forms. A second view finds appointments by email and supports cancellation. A clinic view creates clinics, publishes times and manages the schedule. This remains an unauthenticated assessment demo; no login or privacy guarantees may be implied.
 
-Actual API behavior takes priority over inaccurate details in the reference: use UUIDs, UTC, DELETE 204, BEGIN IMMEDIATE and the partial unique index. All example actions operate on the local API with visibly synthetic data. Swagger remains at /docs.
+## Direction
 
-Quality bar: the reference's structure and color relationships should be recognizable immediately, text and code must remain readable, controls must work with keyboard and pointer, and response/status states must be honest.
+Retain local Nunito Sans, navy text, violet actions, soft lavender/mint surfaces and simple health icons. Replace the infographic with clear product navigation and a two-column booking layout. Technical examples and concurrency tooling remain at /guide and /docs. The user's current functional direction supersedes the original infographic composition.
+
+## First viewport
+
+A restrained brand/navigation bar, a clear booking heading and actual clinic/time selection lead. The right column shows appointment details and patient fields. Mobile stacks available times above the form. No invented doctors, ratings, testimonials or availability counts.
+
+## Interaction
+
+Selecting a time marks it and fills the appointment summary. Confirmation uses a real POST, preserves entries on errors and explains conflicts. Local date/time controls convert to UTC. Cancellation has an inline confirmation, changes real state and releases the slot. Initial load reads data only. Loading, empty, error, success and stale async responses are handled honestly.
+
+## Quality bar
+
+Users should know what to click without understanding JSON, UUIDs or HTTP status codes. Text is readable at ordinary zoom; narrow screens have no horizontal overflow. All views work by keyboard, network failures offer recovery, and original booking rules remain enforced by the backend.

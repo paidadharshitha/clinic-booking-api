@@ -1,178 +1,132 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-27T06:22:11.391835+00:00",
-  "title": "Design System: Clinic Appointment Booking API",
+  "generatedAt": "2026-10-27T07:22:58.816Z",
+  "title": "Design System: Clinic Booking",
   "extensions": {
     "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Action Violet"
+      },
       "ink": {
         "role": "neutral",
         "displayName": "Navy Ink"
       },
-      "action": {
-        "role": "primary",
-        "displayName": "Action Violet"
-      },
-      "blue": {
-        "role": "primary",
-        "displayName": "Link Blue"
+      "bg": {
+        "role": "neutral",
+        "displayName": "Cool Page"
       },
       "green": {
-        "role": "secondary",
-        "displayName": "Clinic Green"
-      },
-      "purple": {
-        "role": "secondary",
-        "displayName": "Schema Purple"
-      },
-      "hero-bg": {
-        "role": "neutral",
-        "displayName": "Pale Lavender"
-      },
-      "examples-bg": {
-        "role": "neutral",
-        "displayName": "Pale Example Blue"
-      },
-      "terminal-bg": {
-        "role": "neutral",
-        "displayName": "Terminal Slate"
+        "role": "semantic",
+        "displayName": "Confirmation Green"
       }
     },
-    "typographyMeta": {
-      "display": {
-        "displayName": "Hero Title",
-        "purpose": "Default hero; explicit viewport overrides remain in the stylesheet."
-      },
-      "body": {
-        "displayName": "Guide Body",
-        "purpose": "Nunito Sans prose; bundled variable font, weights 400\u2013800."
-      },
-      "code": {
-        "displayName": "API Code",
-        "purpose": "JSON drafts, responses, endpoint paths, and commands; tabular numerals."
+    "shadows": [
+      {
+        "name": "active-nav",
+        "value": "0 2px 5px #2330500c",
+        "purpose": "Distinguish the active white navigation item."
       }
-    },
-    "shadows": [],
+    ],
     "motion": [
       {
-        "name": "button-background",
-        "value": "background 0.15s",
-        "purpose": "Primary and run button hover transitions."
+        "name": "control-state",
+        "value": "0.16s ease",
+        "purpose": "Background, border, and text-color transitions."
       },
       {
-        "name": "page-scroll",
-        "value": "smooth",
-        "purpose": "Anchor and Try the API scrolling; immediate when reduced motion is requested."
+        "name": "view-change",
+        "value": "0.2s ease-out",
+        "purpose": "A short visible-to-visible view transition."
       },
       {
-        "name": "reduced-motion",
-        "value": "none",
-        "purpose": "Transitions and animations are disabled under prefers-reduced-motion: reduce."
+        "name": "loading",
+        "value": "1.5s ease-in-out infinite",
+        "purpose": "Loading feedback; disabled for reduced motion."
       }
     ],
     "breakpoints": [
       {
-        "name": "wide-min",
-        "value": "1600px"
+        "name": "wide",
+        "value": "min-width: 1440px"
       },
       {
-        "name": "compact-desktop-max",
-        "value": "1250px"
+        "name": "compact-desktop",
+        "value": "max-width: 1100px"
       },
       {
-        "name": "compact-desktop-min",
-        "value": "1001px"
+        "name": "stacked",
+        "value": "max-width: 780px"
       },
       {
-        "name": "two-columns-max",
-        "value": "1000px"
+        "name": "phone",
+        "value": "max-width: 480px"
       },
       {
-        "name": "single-column-max",
-        "value": "680px"
-      },
-      {
-        "name": "narrow-phone-max",
-        "value": "380px"
+        "name": "narrow-phone",
+        "value": "max-width: 350px"
       }
     ]
   },
   "components": [
     {
-      "name": "Primary Action",
+      "name": "Primary action",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Introductory action leading to the live examples.",
-      "html": "<button class=\"ds-primary\">Try the API <svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 12h16m-6-6 6 6-6 6\"/></svg></button>",
-      "css": ".ds-primary{display:inline-flex;align-items:center;gap:14px;background:#5962d7;color:#fff;padding:9px 17px;border:0;border-radius:7px;font-size:12px;font-weight:800;transition:background .15s;cursor:pointer;font-family:var(--font,\"Nunito Sans\",sans-serif);}.ds-primary:hover{background:#414bbf}.ds-primary:focus-visible{outline:3px solid #5965df;outline-offset:3px;}.ds-primary:disabled{opacity:.55;cursor:wait}.ds-primary svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}@media(prefers-reduced-motion:reduce){.ds-primary{transition:none}}"
+      "description": "Confirm a booking or publish a time.",
+      "html": "<button class=\"ds-button\">Confirm appointment</button>",
+      "css": ".ds-button{font:800 13px var(--font,\"Nunito Sans\",sans-serif);background:var(--accent,#6056c8);color:var(--white,#fff);padding:12px 18px;border:1px solid transparent;border-radius:8px;min-height:44px;cursor:pointer;transition:background-color .16s}.ds-button:hover{background:var(--accent-hover,#4e45ac)}.ds-button:focus-visible{outline:3px solid #8f85e4;outline-offset:3px}.ds-button:disabled{opacity:.5;cursor:not-allowed}"
     },
     {
-      "name": "Run Action",
-      "kind": "button",
-      "description": "Compact action for an individual request.",
-      "html": "<button class=\"ds-run\">Run request</button>",
-      "css": ".ds-run{display:inline-flex;align-items:center;gap:5px;border:0;border-radius:5px;background:#eaf0ff;color:#3457a0;font-size:10px;font-weight:800;padding:5px 8px;white-space:nowrap;transition:background .15s;cursor:pointer;font-family:var(--font,\"Nunito Sans\",sans-serif);}.ds-run:hover{background:#dce5ff}.ds-run:focus-visible{outline:3px solid #5965df;outline-offset:3px;}.ds-run:disabled{opacity:.55;cursor:wait}@media(prefers-reduced-motion:reduce){.ds-run{transition:none}}"
-    },
-    {
-      "name": "JSON Request",
+      "name": "Text field",
       "kind": "input",
-      "refersTo": "request-input",
-      "description": "Editable JSON with visible keyboard focus and vertical resizing.",
-      "html": "<textarea class=\"ds-input\" aria-label=\"Request JSON\" spellcheck=\"false\">{\n  \"name\": \"Sunrise Clinic (demo)\"\n}</textarea>",
-      "css": ".ds-input{display:block;width:100%;min-height:124px;resize:vertical;background:#f5f8fd;border:1px solid #e4ecf8;border-radius:5px;color:#18365e;padding:9px;font-size:10px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;tab-size:2;caret-color:#655bd6;font-family:var(--mono,ui-monospace,SFMono-Regular,Consolas,\"Liberation Mono\",monospace);}.ds-input:hover{border-color:#b7cceb}.ds-input:focus-visible{outline:3px solid #5965df;outline-offset:3px;}"
+      "refersTo": "input",
+      "description": "A labelled field for patient or clinic details.",
+      "html": "<label class=\"ds-label\" for=\"ds-email\">Email address</label><input class=\"ds-input\" id=\"ds-email\" type=\"email\" value=\"patient@example.com\">",
+      "css": ".ds-label{display:block;font:800 12px var(--font,\"Nunito Sans\",sans-serif);color:#3c4c64;margin-bottom:8px}.ds-input{font:14px/1.4 var(--font,\"Nunito Sans\",sans-serif);color:var(--ink,#193350);background:var(--white,#fff);padding:12px 13px;border:1px solid #d9deea;border-radius:8px;min-height:46px;max-width:100%;transition:border-color .16s}.ds-input:hover{border-color:#a9b3c8}.ds-input:focus-visible{border-color:#8f85e4;outline:3px solid #8f85e4;outline-offset:3px}"
     },
     {
-      "name": "Documentation Link",
+      "name": "Task navigation",
       "kind": "nav",
-      "description": "Standard anchor to the existing Swagger documentation.",
-      "html": "<a class=\"ds-docs\" href=\"/docs\">Open Swagger docs</a>",
-      "css": ".ds-docs{display:inline-flex;align-items:center;gap:6px;color:var(--blue,#255cb3);font-size:12px;font-weight:700;text-decoration:none;text-underline-offset:3px;font-family:var(--font,\"Nunito Sans\",sans-serif);}.ds-docs:hover{text-decoration:underline}.ds-docs:focus-visible{outline:3px solid #5965df;outline-offset:3px;}"
+      "description": "Three views with an explicit active task.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Booking tasks\"><button aria-current=\"page\">Book a visit</button><button>My appointments</button><button>Manage clinic</button></nav>",
+      "css": ".ds-nav{display:flex;flex-wrap:wrap;gap:4px;padding:5px;background:#f4f5f9;border-radius:10px}.ds-nav button{font:700 13px var(--font,\"Nunito Sans\",sans-serif);padding:9px 15px;background:transparent;color:#5b667b;border:0;border-radius:7px;cursor:pointer}.ds-nav button[aria-current=page]{background:var(--white,#fff);color:var(--accent,#6056c8);box-shadow:0 2px 5px #2330500c}.ds-nav button:hover{background:#eeedf8;color:var(--accent,#6056c8)}.ds-nav button:focus-visible{outline:3px solid #8f85e4;outline-offset:3px}"
     },
     {
-      "name": "Response Status",
+      "name": "Appointment status",
       "kind": "chip",
-      "refersTo": "result-success",
-      "description": "Illustrative component preview; live labels come from actual HTTP responses.",
-      "html": "<span class=\"ds-result\" data-state=\"success\">201 Created</span>",
-      "css": ".ds-result{display:inline-block;font-size:9px;line-height:1.4;font-weight:700;border-radius:4px;padding:2px 5px;background:#dff3e9;color:#0b6749;white-space:nowrap;font-family:var(--font,\"Nunito Sans\",sans-serif);}.ds-result[data-state=\"error\"]{color:#a3223f;background:#ffebee}.ds-result[data-state=\"warning\"]{color:#894514;background:#fff0db}.ds-result[data-state=\"loading\"]{color:#5443ad;background:#eee8ff}"
+      "description": "Text and semantic color communicate the stored state.",
+      "html": "<span class=\"ds-status\">Confirmed</span>",
+      "css": ".ds-status{display:inline-block;font:800 10px/1.4 var(--font,\"Nunito Sans\",sans-serif);padding:4px 9px;border-radius:5px;background:#e7f4ec;color:#28744f}"
     },
     {
-      "name": "Request Card",
+      "name": "Form panel",
       "kind": "card",
-      "refersTo": "request-card",
-      "description": "White inset surface inside the pale blue examples region.",
-      "html": "<section class=\"ds-card\"><h3>Create a clinic</h3><p>Edit the JSON, then run the request.</p></section>",
-      "css": ".ds-card{padding:11px 11px 8px;border-radius:9px;background:#fff;color:var(--ink,#102d58);min-width:0;font-family:var(--font,\"Nunito Sans\",sans-serif);}.ds-card h3{font-size:13px;font-weight:800;line-height:1.35;margin:0 0 8px}.ds-card p{font-size:11px;line-height:1.55;margin:0;color:var(--muted,#4f6582)}"
-    },
-    {
-      "name": "Concurrency Console",
-      "kind": "custom",
-      "refersTo": "terminal",
-      "description": "A dark console for the live two-request demonstration; preview starts unexecuted.",
-      "html": "<section class=\"ds-terminal\"><h2>Concurrency check</h2><pre>Not run. Results appear after you run the check.</pre></section>",
-      "css": ".ds-terminal{border-radius:12px;padding:14px 16px;background:#243242;color:#eff6ff;font-family:var(--font,\"Nunito Sans\",sans-serif);}.ds-terminal h2{font-size:13px;line-height:1.3;font-weight:800;margin:0}.ds-terminal pre{color:#bfe8cd;font-size:10px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;margin:13px 0;min-height:83px;max-height:270px;overflow:auto;font-family:var(--mono,ui-monospace,SFMono-Regular,Consolas,\"Liberation Mono\",monospace);}"
+      "refersTo": "panel",
+      "description": "A flat bordered surface groups a task.",
+      "html": "<section class=\"ds-panel\"><h2>Your details</h2><p>Just a few details and you’re all set.</p></section>",
+      "css": ".ds-panel{font:15px/1.55 var(--font,\"Nunito Sans\",sans-serif);background:var(--white,#fff);color:var(--ink,#193350);border:1px solid var(--border,#e3e7ef);border-radius:var(--radius,16px);padding:26px 27px 20px}.ds-panel h2{font-size:18px;font-weight:800;line-height:1.4;margin:0}.ds-panel p{font-size:13px;color:var(--muted,#617087);margin:9px 0 0}"
     }
   ],
   "narrative": {
-    "northStar": "Clinic Appointment Booking API reference image",
-    "overview": "The user's supplied image is the visual authority: a light, compact clinic API guide with navy lettering, pastel panels, health-themed vector icons, sequential examples, and a database diagram. Preserve that recognizable identity. The actual API contract governs endpoint names, UUIDs, UTC timestamps, cancellation responses, and concurrency explanations.",
+    "northStar": "A clear path to an appointment",
+    "overview": "The user requested simple patient and clinic workflows in place of the information-heavy homepage. The portal at `/` uses the Operate mode recorded in `.impeccable/surface-brief.md`: choose a time, enter details, and confirm. Navy text, violet actions, pale surfaces, Nunito Sans, and health icons retain the earlier approachable identity.",
     "keyCharacteristics": [
-      "Rounded pastel panels with fine borders and navy typography.",
-      "A local variable font for prose and system monospace for editable JSON and responses.",
-      "Compact information density that reflows into readable mobile sections.",
-      "Actual HTTP status, response body, and timing for every executed example."
+      "Ordinary forms",
+      "Visible selection and outcomes",
+      "Restrained color",
+      "Responsive task layouts"
     ],
     "rules": [],
     "dos": [
-      "Do preserve the supplied reference's navy typography, pastel panels, and health-themed vector identity.",
-      "Do keep examples consistent with the live API and show real status codes, response bodies, and timings.",
-      "Do preserve the final mobile stacking rules, wrapped code, keyboard focus, and reduced-motion behavior.",
-      "Do keep synthetic patient details and persistent-data effects explicit."
+      "Do keep booking, lookup, and schedule management understandable without API knowledge.",
+      "Do show real availability, confirmations, errors, and cancellation state.",
+      "Do preserve visible focus, local-time labels, and usable narrow-screen layouts."
     ],
     "donts": [
-      "Don't replace the chosen reference with a new visual identity during routine changes.",
-      "Don't show illustrative responses or a live demonstration as a completed automated test run.",
-      "Don't imply that resetting examples deletes clinics, slots, or bookings.",
-      "Don't introduce shadows or external font dependencies into this existing flat, bundled system without an intentional design change."
+      "Don't move JSON examples or setup instructions back into the patient flow.",
+      "Don't imply that email lookup or clinic navigation provides sign-in or access control.",
+      "Don't invent doctors, ratings, availability counts, or security guarantees."
     ]
   }
 }

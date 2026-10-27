@@ -1,180 +1,121 @@
 ---
-name: Clinic Appointment Booking API
-description: A reference-led visual guide with live appointment API examples.
+name: Clinic Booking
+description: A simple patient and clinic portal backed by the appointment API.
 colors:
-  ink: "#102d58"
-  muted: "#4f6582"
-  border: "#dfebfb"
-  blue: "#255cb3"
-  green: "#087353"
-  purple: "#8150bb"
-  action: "#5962d7"
-  action-hover: "#414bbf"
-  surface: "#fff"
-  hero-bg: "#f4f4ff"
-  examples-bg: "#f0f7ff"
-  code-bg: "#f5f8fd"
-  terminal-bg: "#243242"
-  terminal-text: "#eff6ff"
-  focus: "#5965df"
-  success-text: "#0b6749"
-  success-bg: "#dff3e9"
-  error-text: "#a3223f"
-  error-bg: "#ffebee"
-  warning-text: "#894514"
-  warning-bg: "#fff0db"
-  loading-text: "#5443ad"
-  loading-bg: "#eee8ff"
-  post-method: "#087a53"
+  ink: "#193350"
+  muted: "#617087"
+  accent: "#6056c8"
+  accent-hover: "#4e45ac"
+  accent-soft: "#eeecfb"
+  green: "#247660"
+  green-soft: "#eaf5ef"
+  border: "#e3e7ef"
+  bg: "#f7f8fb"
+  white: "#fff"
+  danger: "#b0394e"
 typography:
   display:
     fontFamily: '"Nunito Sans", sans-serif'
-    fontSize: "clamp(28px, 2.48vw, 43px)"
+    fontSize: "36px"
     fontWeight: 800
-    lineHeight: 1.15
+    lineHeight: 1.25
     letterSpacing: "-0.025em"
   title:
     fontFamily: '"Nunito Sans", sans-serif'
-    fontSize: "16px"
+    fontSize: "18px"
     fontWeight: 800
-    lineHeight: 1.3
+    lineHeight: 1.4
   body:
     fontFamily: '"Nunito Sans", sans-serif'
-    fontSize: "14px"
-    fontWeight: 400
+    fontSize: "15px"
     lineHeight: 1.55
-  code:
-    fontFamily: 'ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace'
-    fontSize: "10px"
-    lineHeight: 1.6
   label:
     fontFamily: '"Nunito Sans", sans-serif'
-    fontSize: "10px"
+    fontSize: "12px"
     fontWeight: 800
 rounded:
-  panel: "12px"
-  request-card: "9px"
-  primary: "7px"
-  control: "5px"
-  label: "4px"
+  panel: "16px"
+  mobile-panel: "13px"
+  control: "8px"
+  time: "9px"
 spacing:
-  compact-gap: "8px"
-  code-inset: "9px"
-  inline-gap: "10px"
-  panel-gap: "14px"
-  column-gap: "15px"
-  page-inset: "18px"
+  time-gap: "10px"
+  field-gap: "20px"
+  column-gap: "26px"
+  page-inset: "32px"
 components:
   button-primary:
-    backgroundColor: "{colors.action}"
-    textColor: "{colors.surface}"
-    rounded: "{rounded.primary}"
-    padding: "9px 17px"
-  button-primary-hover:
-    backgroundColor: "{colors.action-hover}"
-  panel:
-    rounded: "{rounded.panel}"
-  request-card:
-    backgroundColor: "{colors.surface}"
-    rounded: "{rounded.request-card}"
-    padding: "11px 11px 8px"
-  request-input:
-    backgroundColor: "{colors.code-bg}"
+    backgroundColor: "{colors.accent}"
+    textColor: "{colors.white}"
     rounded: "{rounded.control}"
-    padding: "{spacing.code-inset}"
-    typography: "{typography.code}"
-  result-success:
-    backgroundColor: "{colors.success-bg}"
-    textColor: "{colors.success-text}"
-    rounded: "{rounded.label}"
-    padding: "2px 5px"
-  terminal:
-    backgroundColor: "{colors.terminal-bg}"
-    textColor: "{colors.terminal-text}"
+    padding: "12px 18px"
+  button-primary-hover:
+    backgroundColor: "{colors.accent-hover}"
+  input:
+    backgroundColor: "{colors.white}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.control}"
+    padding: "12px 13px"
+  panel:
+    backgroundColor: "{colors.white}"
     rounded: "{rounded.panel}"
-    padding: "14px 16px"
 ---
 
-# Design System: Clinic Appointment Booking API
+# Design System: Clinic Booking
 
 ## Overview
 
-**Creative North Star: "Clinic Appointment Booking API reference image"**
+**Creative North Star: "A clear path to an appointment"**
 
-The user's supplied image is the visual authority: a light, compact clinic API guide with navy lettering, pastel panels, health-themed vector icons, sequential examples, and a database diagram. Preserve that recognizable identity. The actual API contract governs endpoint names, UUIDs, UTC timestamps, cancellation responses, and concurrency explanations.
+The user requested simple patient and clinic workflows in place of the information-heavy homepage. The portal at `/` uses the Operate mode recorded in `.impeccable/surface-brief.md`: choose a time, enter details, and confirm. Navy text, violet actions, pale surfaces, Nunito Sans, and health icons retain the earlier approachable identity.
 
-This document records the implemented system in `clinic_api/static/index.html`, `styles.css`, and `app.js`. Product commitments live in `PRODUCT.md`; the page-specific composition and interaction purpose live in `.impeccable/surface-brief.md`. It records code evidence, not a visual audit or a claim that browser scenarios passed.
+**Key Characteristics:** ordinary forms; visible selection and outcomes; restrained color; responsive task layouts.
 
-**Key Characteristics:**
-
-- Rounded pastel panels with fine borders and navy typography.
-- A local variable font for prose and system monospace for editable JSON and responses.
-- Compact information density that reflows into readable mobile sections.
-- Actual HTTP status, response body, and timing for every executed example.
+These tokens describe `portal.css`. The earlier three-column API playground remains at `/guide` with `styles.css` and `app.js`; its code-heavy composition is not the portal template. Swagger remains at `/docs`.
 
 ## Colors
 
-The palette uses cool lavender and blue surfaces, with green, amber, and red reserved for meaningful operations and outcomes.
-
-- **Primary:** Action violet identifies the introductory action; blue identifies links and supporting controls.
-- **Secondary:** Green and purple organize method badges, schema entities, and explanatory accents.
-- **Neutral:** Ink carries headings and prose; muted ink carries support copy. White request cards sit inside pale blue example panels. The dark terminal isolates the live race result.
-- **Status:** Success, error, warning, and loading use distinct text/background pairs from the tokens above. A label and response accompany color; color alone never communicates the result.
+Violet identifies primary actions, the current navigation item, and selected times. Navy carries content; muted ink supports it. White panels sit on the cool page background. Green marks successful outcomes and availability; danger styling identifies cancellations and errors. Status words accompany color.
 
 ## Typography
 
-Nunito Sans is bundled as a variable WOFF2 font covering weights 400–800, loaded with `font-display: swap`; its SIL license is bundled beside it. JSON, commands, endpoints, and timings use the system monospace stack with tabular numerals.
-
-The display token describes the default hero; section titles use the title token, and request headings use 13px at weight 800. Code defaults to the code token; it grows to 11px on wide screens and in the final mobile rules. The interface uses a compact, observed size hierarchy, not a mathematical type scale.
+The bundled Nunito Sans variable font covers weights 400–800 with `font-display: swap`. The portal uses ordinary prose and form labels, without visible JSON or UUIDs. Controls use 13–14px. Main headings step down from 36px to 32px, 29px, 26px, and 24px at the documented breakpoints.
 
 ## Layout
 
-The page container is centered with a maximum width of 1760px. Default desktop layout uses three columns (`1.04fr 1.13fr 0.74fr`), the page-inset and column-gap tokens, and independently stacked panels. Request/response pairs share two equal columns where space permits. Every grid child permits shrinking; code wraps and scrolls inside its panel.
+The header and application container cap at 1264px. Booking uses a `1.5fr / minmax(310px, 1fr)` grid, placing time selection before patient details. Lookup and clinic management use a 340px form column beside flexible results. Appointment times use a selectable grid.
 
-| Viewport | Implemented behavior |
+| Width | Effective layout |
 | --- | --- |
-| At least 1600px | Three columns; hero title 43px, more panel padding, code 11px. |
-| 1251–1599px | Default three columns and paired request/response editors. |
-| 1001–1250px | Three compact columns (`1fr 1.15fr .75fr`); 12px outer padding/gap; request/response pairs stack. |
-| 681–1000px | Two main columns (`1fr 1.12fr`); assurance panels occupy a full-width, two-column row; request/response pairs stack. |
-| At most 680px | One main column; examples follow overview, then assurance. Detail cards and request/response pairs stack. Stack entries remain a two-column list; code uses 11px. |
-| At most 380px | Additional hero, icon, and diagram reductions; hero title 24px. |
-
-The final `max-width: 680px` block deliberately overrides earlier mobile rules: detail cards and request/response editors are single-column. Keep the effective cascade when adapting this page. Code/output panels have internal scroll limits; the race console caps at 270px.
+| At least 1440px | More top padding; booking column gap 30px. |
+| At most 1100px | 25px page inset, tighter two-column layouts, two time columns. |
+| At most 780px | Navigation wraps below the brand; all main layouts stack; three time columns. |
+| At most 480px | 16px page inset, 13px panel radius, single-column lookup form, wrapping actions. |
+| At most 350px | 12px page inset, two time columns, wrapped date controls. |
 
 ## Elevation & Depth
 
-Depth comes from background tone, thin borders, and white inset request cards. The stylesheet declares no box shadows. The hero has a pale decorative ring behind its content; it is noninteractive. Dark terminal contrast marks a different kind of content without an elevated modal treatment.
+Panels use fine borders and tonal layering. The active navigation item alone uses a subtle `0 2px 5px #2330500c` shadow. Fields and selected time buttons express focus through outlines and border/background changes.
 
 ## Shapes
 
-Outer panels use the panel radius; inset request cards, primary buttons, fields, and status labels step down through the documented radius tokens. Icon discs and small connection indicators are circular. Inline SVG supplies the heart/pulse emblem and line icons; preserve the established rounded stroke treatment.
+Panel, control, and time radii follow the tokens above; small status labels use 5px corners. The heart/pulse brand and line icons use inline SVG. The task does not require decorative photography or invented practitioner profiles.
 
 ## Components
 
-- **Primary action:** White text on action violet, weight 800, with a darker hover state. It scrolls to the API examples and focuses the first action. Run buttons use a lighter blue treatment; destructive text actions remain explicitly labelled.
-- **Request card:** A heading and run action sit above the method/endpoint bar. An editable, vertically resizable JSON field and response area sit below. On narrow layouts the response follows the request.
-- **Status label:** Idle guidance changes only after a request starts or finishes. HTTP 409 receives warning styling; unsuccessful requests show the actual error. Successful DELETE 204 explains that no response body is returned.
-- **Live race console:** A separate synthetic clinic and slot receive two concurrent booking requests. Its result uses both HTTP responses and a follow-up confirmed-booking count. An incomplete result is labelled incomplete; it is not presented as a passing test suite.
-- **Data browser and reset:** Listing uses the current clinic context where applicable. Cancelling retains history. Reset clears the page's example context and drafts; it does not delete persisted API records.
-- **Documentation links:** Swagger remains at `/docs`, and repository/setup links use normal anchors. The keyboard skip link leads directly to the examples.
+- **Navigation:** Book a visit, My appointments, and Manage clinic switch visible views. The current item exposes `aria-current="page"`.
+- **Booking:** selecting a time fills a human-readable summary. Name/email fields submit a real booking. Confirmation replaces the form; errors preserve patient entries and explain conflicts.
+- **Lookup:** email finds matching appointments. Rows show dates, clinic information, and status; cancellation uses inline confirmation. Email lookup is not authentication.
+- **Clinic workspace:** clinic creation and local date/time fields publish slots. Schedule and booking lists expose appropriate cancellations and prevent silently removing an occupied slot.
+- **Feedback:** loading and empty states provide recovery; errors are announced; writes disable controls. Initial load reads data only. Local date/time input converts to UTC; display uses the browser timezone.
 
-Interactions use same-origin API paths. Initial page load checks `/health`; data changes happen on explicit actions. While an action is active, buttons/selects are disabled and drafts become read-only. Status elements use polite live announcements, and output areas expose busy state. API output is inserted as text, not interpreted HTML.
-
-All interactive controls share a visible 3px focus outline with a 3px offset. Button backgrounds transition over 0.15s. Reduced-motion preferences disable CSS transitions/animations and replace smooth programmatic scrolling with immediate scrolling. This documentation describes the implementation; it does not certify accessibility conformance.
+Controls have a 3px focus outline with 3px offset. State transitions last 0.16s and view changes 0.2s. Reduced-motion preferences disable animations and smooth scrolling. These notes describe implementation, not an accessibility certification. The portal remains an unauthenticated assessment demo using sample details.
 
 ## Do's and Don'ts
 
-### Do:
-
-- **Do** preserve the supplied reference's navy typography, pastel panels, and health-themed vector identity.
-- **Do** keep examples consistent with the live API and show real status codes, response bodies, and timings.
-- **Do** preserve the final mobile stacking rules, wrapped code, keyboard focus, and reduced-motion behavior.
-- **Do** keep synthetic patient details and persistent-data effects explicit.
-
-### Don't:
-
-- **Don't** replace the chosen reference with a new visual identity during routine changes.
-- **Don't** show illustrative responses or a live demonstration as a completed automated test run.
-- **Don't** imply that resetting examples deletes clinics, slots, or bookings.
-- **Don't** introduce shadows or external font dependencies into this existing flat, bundled system without an intentional design change.
+- **Do** keep booking, lookup, and schedule management understandable without API knowledge.
+- **Do** show real availability, confirmations, errors, and cancellation state.
+- **Do** preserve visible focus, local-time labels, and usable narrow-screen layouts.
+- **Don't** move JSON examples or setup instructions back into the patient flow.
+- **Don't** imply that email lookup or clinic navigation provides sign-in or access control.
+- **Don't** invent doctors, ratings, availability counts, or security guarantees.

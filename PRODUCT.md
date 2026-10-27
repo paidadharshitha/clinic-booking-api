@@ -20,7 +20,7 @@ Create and list clinics; create, list and cancel slots; create, retrieve, list a
 
 ## Brand commitments
 
-The user supplied a light three-column Clinic Appointment Booking API reference image and explicitly requested that visual format on localhost. Preserve its navy typography, pastel panels, API examples, schema diagram, and health-themed vector icons. Keep the implementation's actual API contracts accurate where reference text differs.
+The user originally supplied a light, pastel API infographic. The latest request explicitly replaces the information-heavy homepage with simple patient and clinic workflows. Keep the approachable navy typography, soft surfaces and health-themed icons, but use ordinary forms and appointment controls as the primary experience. The earlier API playground remains separately available at /guide, alongside Swagger at /docs.
 
 ## Evidence on hand
 

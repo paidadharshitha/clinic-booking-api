@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Explore a clinic appointment booking API. Create slots, try bookings, and see concurrency protection in action."
+    />
+    <meta name="theme-color" content="#f4f6ff" />
+    <title>Clinic Appointment Booking API</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%237579ff' d='M12 21S2 15 2 8a5 5 0 0 1 10-1 5 5 0 0 1 10 1c0 7-10 13-10 13Z'/%3E%3C/svg%3E"
+    />
+    <link
+      rel="preload"
+      href="/assets/nunito-sans-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script src="/assets/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#api-examples">Skip to API examples</a>
+    <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <symbol id="i-calendar" viewBox="0 0 24 24">
+          <rect x="3" y="5" width="18" height="17" rx="3" />
+          <path d="M7 2v6m10-6v6M3 11h18m-14 4h2m4 0h2m-8 3h2" />
+        </symbol>
+        <symbol id="i-check" viewBox="0 0 24 24">
+          <path d="m5 12 4 4L19 6" />
+        </symbol>
+        <symbol id="i-shield" viewBox="0 0 24 24">
+          <path d="M12 2 3 6v6c0 5 9 10 9 10s9-5 9-10V6Z" />
+          <path d="m8 12 3 3 5-6" />
+        </symbol>
+        <symbol id="i-lock" viewBox="0 0 24 24">
+          <rect x="5" y="10" width="14" height="12" rx="3" />
+          <path d="M8 10V6a4 4 0 0 1 8 0v4m-4 5v3" />
+        </symbol>
+        <symbol id="i-star" viewBox="0 0 24 24">
+          <path d="m12 2 3 6.5 7 1-5 5 1.2 7L12 18l-6.2 3.5 1.2-7-5-5 7-1Z" />
+        </symbol>
+        <symbol id="i-database" viewBox="0 0 24 24">
+          <ellipse cx="12" cy="5" rx="9" ry="3" />
+          <path d="M3 5v14c0 4 18 4 18 0V5M3 12c0 4 18 4 18 0" />
+        </symbol>
+        <symbol id="i-arrow" viewBox="0 0 24 24">
+          <path d="M4 12h16m-6-6 6 6-6 6" />
+        </symbol>
+        <symbol id="i-play" viewBox="0 0 24 24">
+          <path d="m8 4 12 8-12 8Z" />
+        </symbol>
+        <symbol id="i-code" viewBox="0 0 24 24">
+          <path d="m7 7-5 5 5 5m10-10 5 5-5 5m-3-14-4 18" />
+        </symbol>
+        <symbol id="i-heart" viewBox="0 0 24 24">
+          <path
+            d="M12 21S2 15 2 8a5 5 0 0 1 10-1 5 5 0 0 1 10 1c0 7-10 13-10 13Z"
+          />
+        </symbol>
+      </defs>
+    </svg>
+
+    <main class="dashboard">
+      <div class="overview-column">
+        <header class="hero panel">
+          <div class="hero-title">
+            <svg class="brand-heart" viewBox="0 0 100 96" aria-hidden="true">
+              <path
+                d="M50 88S4 61 4 29C4 4 35-2 50 17 65-2 96 4 96 29c0 32-46 59-46 59Z"
+                fill="currentColor"
+              />
+              <path
+                d="M5 50h25l10-22 12 38 10-24 6 8h17"
+                fill="none"
+                stroke="white"
+                stroke-width="5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <h1>Clinic Appointment<br />Booking API</h1>
+          </div>
+          <p class="hero-description">
+            Easily manage clinic time slots and bookings.<br />Built for
+            reliability, concurrency and a smooth<br class="wide-only" />
+            experience for clinics and patients.
+          </p>
+          <div class="benefits">
+            <div>
+              <span class="icon-disc blue"
+                ><svg><use href="#i-calendar" /></svg></span
+              ><span>Create &amp; list<br />slots</span>
+            </div>
+            <div>
+              <span class="icon-disc green"
+                ><svg><use href="#i-calendar" /></svg></span
+              ><span>Book &amp; cancel<br />appointments</span>
+            </div>
+            <div>
+              <span class="icon-disc blue"
+                ><svg><use href="#i-shield" /></svg></span
+              ><span>No double<br />bookings</span>
+            </div>
+            <div>
+              <span class="icon-disc green"
+                ><svg><use href="#i-check" /></svg></span
+              ><span>Validation &amp;<br />helpful errors</span>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <button id="run-example" class="primary-button">
+              Try the API <svg><use href="#i-arrow" /></svg></button
+            ><a class="docs-link" href="/docs"
+              >Open Swagger docs <svg><use href="#i-code" /></svg
+            ></a>
+            <a class="docs-link" href="/">Booking portal</a>
+          </div>
+        </header>
+
+        <div class="details-grid">
+          <section class="panel stack-panel" aria-labelledby="stack-title">
+            <h2 id="stack-title">Tech Stack</h2>
+            <ul class="stack-list">
+              <li>
+                <svg class="python-logo" viewBox="0 0 32 32" aria-hidden="true">
+                  <path
+                    fill="#357bb6"
+                    d="M16 1c-8 0-8 3-8 8h9v2H5c-6 0-6 15 0 15h3v-6c0-4 3-6 7-6h8V6c0-4-3-5-7-5Z"
+                  />
+                  <path
+                    fill="#f4c545"
+                    d="M16 31c8 0 8-3 8-8h-9v-2h12c6 0 6-15 0-15h-3v6c0 4-3 6-7 6H9v8c0 4 3 5 7 5Z"
+                  />
+                  <circle cx="12" cy="5" r="1.5" fill="white" />
+                  <circle cx="20" cy="27" r="1.5" fill="white" /></svg
+                ><span>Python <small>3.11+</small></span>
+              </li>
+              <li>
+                <span class="fastapi-logo" aria-hidden="true"
+                  ><svg viewBox="0 0 24 24">
+                    <path
+                      d="m14 2-9 12h6l-1 8 9-13h-6Z"
+                      fill="white"
+                      stroke="none"
+                    /></svg></span
+                ><span>FastAPI <small>REST API</small></span>
+              </li>
+              <li>
+                <svg class="stack-db"><use href="#i-database" /></svg
+                ><span>SQLite <small>SQLAlchemy 2.x</small></span>
+              </li>
+              <li>
+                <svg class="stack-shield"><use href="#i-shield" /></svg
+                ><span>Pydantic <small>Input validation</small></span>
+              </li>
+            </ul>
+          </section>
+
+          <section class="panel setup-panel" aria-labelledby="setup-title">
+            <h2 id="setup-title">Setup &amp; Run</h2>
+            <pre
+              class="setup-code"
+            ><code><span class="comment"># 1. Clone the repository</span>
+git clone https://github.com/paidadharshitha/clinic-booking-api.git
+cd clinic-booking-api
+
+<span class="comment"># 2. Create an environment</span>
+python3 -m venv .venv
+source .venv/bin/activate
+
+<span class="comment"># 3. Install dependencies</span>
+pip install -r requirements-dev.txt
+pip install --no-deps -e .
+
+<span class="comment"># 4. Start the server</span>
+uvicorn clinic_api.main:app --reload
+
+<span class="comment"># 5. Run the tests</span>
+pytest</code></pre>
+            <a
+              class="text-link"
+              href="https://github.com/paidadharshitha/clinic-booking-api#readme"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Full setup guide <svg><use href="#i-arrow" /></svg
+            ></a>
+          </section>
+
+          <section
+            class="panel endpoints-panel"
+            aria-labelledby="endpoints-title"
+          >
+            <h2 id="endpoints-title">API Endpoints</h2>
+            <table class="endpoint-table">
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th>Endpoint</th>
+                  <th>Purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="method post-soft">POST</span></td>
+                  <td>/clinics</td>
+                  <td>Create clinic</td>
+                </tr>
+                <tr>
+                  <td><span class="method get-soft">GET</span></td>
+                  <td>/clinics</td>
+                  <td>List clinics</td>
+                </tr>
+                <tr>
+                  <td><span class="method post-soft">POST</span></td>
+                  <td>/clinics/{id}/slots</td>
+                  <td>Create slot</td>
+                </tr>
+                <tr>
+                  <td><span class="method get-soft">GET</span></td>
+                  <td>/clinics/{id}/slots</td>
+                  <td>List slots</td>
+                </tr>
+                <tr>
+                  <td><span class="method delete-soft">DELETE</span></td>
+                  <td>/slots/{id}</td>
+                  <td>Cancel slot</td>
+                </tr>
+                <tr>
+                  <td><span class="method post-soft">POST</span></td>
+                  <td>/bookings</td>
+                  <td>Book a slot</td>
+                </tr>
+                <tr>
+                  <td><span class="method get-soft">GET</span></td>
+                  <td>/bookings</td>
+                  <td>List bookings</td>
+                </tr>
+                <tr>
+                  <td><span class="method delete-soft">DELETE</span></td>
+                  <td>/bookings/{id}</td>
+                  <td>Cancel booking</td>
+                </tr>
+              </tbody>
+            </table>
+            <a class="subtle-link" href="/docs"
+              >See all endpoints &amp; filters</a
+            >
+          </section>
+        </div>
+
+        <section class="panel schema-panel" aria-labelledby="schema-title">
+          <h2 id="schema-title">Database Schema <span>(SQLite)</span></h2>
+          <div
+            class="schema-diagram"
+            aria-label="One clinic has many slots. One slot has many bookings, but at most one confirmed booking."
+          >
+            <div class="entity clinics-entity">
+              <h3>clinics</h3>
+              <ul>
+                <li>id <span>PK</span></li>
+                <li>name</li>
+                <li>address</li>
+                <li>created_at</li>
+              </ul>
+            </div>
+            <div class="relation">
+              <span>1…*</span><svg><use href="#i-arrow" /></svg>
+            </div>
+            <div class="entity slots-entity">
+              <h3>slots</h3>
+              <ul>
+                <li>id <span>PK</span></li>
+                <li>clinic_id <span>FK</span></li>
+                <li>starts_at</li>
+                <li>ends_at</li>
+                <li>status</li>
+              </ul>
+            </div>
+            <div class="relation">
+              <span>1…*</span><svg><use href="#i-arrow" /></svg>
+            </div>
+            <div class="entity bookings-entity">
+              <h3>bookings</h3>
+              <ul>
+                <li>id <span>PK</span></li>
+                <li>slot_id <span>FK</span></li>
+                <li>patient_name</li>
+                <li>patient_email</li>
+                <li>status</li>
+              </ul>
+            </div>
+          </div>
+          <p class="schema-note">
+            <svg><use href="#i-lock" /></svg> Unique active booking per slot,
+            enforced by the database.
+          </p>
+        </section>
+
+        <section class="panel explorer-panel" aria-labelledby="explorer-title">
+          <div class="section-heading">
+            <h2 id="explorer-title">Explore Your Data</h2>
+            <span class="small-label">Live API</span>
+          </div>
+          <div class="explorer-controls">
+            <label class="sr-only" for="browse-resource">Resource to list</label
+            ><select id="browse-resource">
+              <option value="clinics">Clinics</option>
+              <option value="slots">Slots</option>
+              <option value="bookings">Bookings</option></select
+            ><button id="browse-button" class="secondary-button">
+              List records</button
+            ><button id="cancel-slot-button" class="quiet-button danger-text">
+              Cancel current slot
+            </button>
+          </div>
+          <div class="response-label">
+            <span>Response</span
+            ><span id="browse-result" class="result-tag">Not run</span>
+          </div>
+          <pre id="browse-response" class="code-output explorer-output">
+Choose a resource and click “List records”.
+Slots and bookings use the current clinic when selected.</pre
+          >
+        </section>
+      </div>
+
+      <div class="examples-column">
+        <section
+          class="examples-panel panel"
+          id="api-examples"
+          aria-labelledby="examples-title"
+        >
+          <div class="examples-heading">
+            <h2 id="examples-title">Example API Requests &amp; Responses</h2>
+            <span id="api-status" class="connection-status" role="status"
+              >Connecting</span
+            >
+          </div>
+          <p class="section-description">
+            Try each step in order. Edit the JSON, then run a request.
+          </p>
+          <div class="context-strip">
+            <span>Clinic <code id="context-clinic">—</code></span
+            ><span>Slot <code id="context-slot">—</code></span
+            ><span>Booking <code id="context-booking">—</code></span>
+          </div>
+          <p id="context-summary" class="context-summary">
+            Synthetic examples. Requests save data in your local database.
+          </p>
+
+          <article class="request-card" id="step-clinic">
+            <div class="request-heading">
+              <h3>1. Create a Clinic</h3>
+              <button class="run-button" data-run="clinic">
+                <svg><use href="#i-play" /></svg>Run request
+              </button>
+            </div>
+            <div class="endpoint-bar">
+              <span class="method post">POST</span><code>/clinics</code>
+            </div>
+            <div class="request-columns">
+              <div>
+                <label for="clinic-request"
+                  >Request body <span>editable</span></label
+                ><textarea
+                  id="clinic-request"
+                  class="request-input"
+                  rows="6"
+                  spellcheck="false"
+                  aria-label="Create clinic JSON request"
+                ></textarea>
+              </div>
+              <div>
+                <div class="response-label">
+                  <span>Response</span
+                  ><span id="clinic-result" class="result-tag">Not run</span>
+                </div>
+                <pre id="clinic-response" class="code-output">
+Run this request to create a clinic.
+
+Expected: 201 Created</pre
+                >
+              </div>
+            </div>
+            <small id="clinic-time" class="request-time"></small>
+          </article>
+
+          <article class="request-card" id="step-slot">
+            <div class="request-heading">
+              <h3>2. Create a Time Slot</h3>
+              <button class="run-button" data-run="slot">
+                <svg><use href="#i-play" /></svg>Run request
+              </button>
+            </div>
+            <div class="endpoint-bar">
+              <span class="method post blue-method">POST</span
+              ><code id="slot-endpoint">/clinics/{clinic_id}/slots</code>
+            </div>
+            <div class="request-columns">
+              <div>
+                <label for="slot-request"
+                  >Request body <span>editable · UTC</span></label
+                ><textarea
+                  id="slot-request"
+                  class="request-input"
+                  rows="6"
+                  spellcheck="false"
+                  aria-label="Create slot JSON request"
+                ></textarea>
+              </div>
+              <div>
+                <div class="response-label">
+                  <span>Response</span
+                  ><span id="slot-result" class="result-tag">Not run</span>
+                </div>
+                <pre id="slot-response" class="code-output">
+Create a clinic in step 1 first.
+
+Expected: 201 Created</pre
+                >
+              </div>
+            </div>
+            <small id="slot-time" class="request-time"></small>
+          </article>
+
+          <article class="request-card" id="step-booking">
+            <div class="request-heading">
+              <h3>3. Book an Appointment</h3>
+              <button class="run-button" data-run="booking">
+                <svg><use href="#i-play" /></svg>Run request
+              </button>
+            </div>
+            <div class="endpoint-bar">
+              <span class="method post purple-method">POST</span
+              ><code>/bookings</code>
+            </div>
+            <div class="request-columns">
+              <div>
+                <label for="booking-request"
+                  >Request body <span>editable</span></label
+                ><textarea
+                  id="booking-request"
+                  class="request-input"
+                  rows="6"
+                  spellcheck="false"
+                  aria-label="Create booking JSON request"
+                ></textarea>
+              </div>
+              <div>
+                <div class="response-label">
+                  <span>Response</span
+                  ><span id="booking-result" class="result-tag">Not run</span>
+                </div>
+                <pre id="booking-response" class="code-output">
+Create a slot in step 2 first.
+
+Expected: 201 Created</pre
+                >
+              </div>
+            </div>
+            <small id="booking-time" class="request-time"></small>
+          </article>
+
+          <article class="request-card" id="step-conflict">
+            <div class="request-heading">
+              <h3>4. Try a Double Booking</h3>
+              <button class="run-button" data-run="conflict">
+                <svg><use href="#i-play" /></svg>Run request
+              </button>
+            </div>
+            <div class="endpoint-bar">
+              <span class="method post purple-method">POST</span
+              ><code>/bookings</code
+              ><span class="endpoint-hint">Same slot</span>
+            </div>
+            <div class="request-columns">
+              <div>
+                <label for="conflict-request"
+                  >Request body <span>editable</span></label
+                ><textarea
+                  id="conflict-request"
+                  class="request-input"
+                  rows="6"
+                  spellcheck="false"
+                  aria-label="Double booking JSON request"
+                ></textarea>
+              </div>
+              <div>
+                <div class="response-label">
+                  <span>Response</span
+                  ><span id="conflict-result" class="result-tag">Not run</span>
+                </div>
+                <pre id="conflict-response" class="code-output">
+Book the slot in step 3 first.
+
+Expected: 409 Conflict
+SLOT_ALREADY_BOOKED</pre
+                >
+              </div>
+            </div>
+            <small id="conflict-time" class="request-time"></small>
+          </article>
+
+          <article class="request-card compact-card" id="step-cancel">
+            <div class="request-heading">
+              <h3>5. Cancel the Booking</h3>
+              <button class="run-button" data-run="cancel-booking">
+                <svg><use href="#i-play" /></svg>Run request
+              </button>
+            </div>
+            <div class="endpoint-bar">
+              <span class="method delete">DELETE</span
+              ><code id="cancel-booking-endpoint">/bookings/{booking_id}</code>
+            </div>
+            <div class="response-label">
+              <span>Response</span
+              ><span id="cancel-booking-result" class="result-tag"
+                >Not run</span
+              >
+            </div>
+            <pre
+              id="cancel-booking-response"
+              class="code-output compact-output"
+            >
+Expected: 204 No Content. The slot becomes available again.</pre
+            >
+            <small id="cancel-booking-time" class="request-time"></small>
+          </article>
+          <div class="examples-footer">
+            <span>Every response here comes from your running API.</span
+            ><button id="reset-examples" class="text-button">
+              Reset examples
+            </button>
+          </div>
+        </section>
+
+        <section
+          class="terminal-panel"
+          aria-labelledby="concurrency-test-title"
+        >
+          <div class="terminal-heading">
+            <h2 id="concurrency-test-title">
+              <svg><use href="#i-shield" /></svg> Live Concurrency Check
+            </h2>
+            <span class="terminal-dots" aria-hidden="true"
+              ><i></i><i></i><i></i
+            ></span>
+          </div>
+          <p>Two simultaneous requests. One appointment slot.</p>
+          <pre id="race-output">
+$ send two booking requests in parallel
+
+Click “Run concurrency check” to create a fresh
+demo slot and see the actual API results.</pre
+          >
+          <div class="terminal-footer">
+            <button class="terminal-button" data-run="race">
+              <svg><use href="#i-play" /></svg>Run concurrency check</button
+            ><span id="race-result" class="result-tag">Not run</span>
+          </div>
+        </section>
+      </div>
+
+      <aside
+        class="assurance-column"
+        aria-label="Validation, reliability and project features"
+      >
+        <section class="panel info-panel validation-panel">
+          <h2>
+            <span class="heading-icon"
+              ><svg><use href="#i-check" /></svg></span
+            >Validation &amp; Error Responses
+          </h2>
+          <ul class="check-list">
+            <li>Required fields, valid names and email addresses</li>
+            <li>Valid date/time with an explicit timezone</li>
+            <li>End time after start time</li>
+            <li>Future, active and available slots</li>
+            <li>Clinic, slot and booking must exist</li>
+            <li>
+              Helpful errors with proper status codes
+              <span class="inline-codes">404 · 409 · 422 · 503</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="panel info-panel concurrency-panel">
+          <h2>
+            <svg class="section-icon"><use href="#i-lock" /></svg>Concurrency
+            Handling
+          </h2>
+          <p>
+            Database transactions protect each booking. Even when two requests
+            arrive at the same time, only one can succeed.
+          </p>
+          <pre
+            class="explanation-code"
+          ><code><span class="comment"># SQLite write transaction</span>
+BEGIN IMMEDIATE;
+<span class="comment"># Check slot, then insert booking</span>
+INSERT INTO bookings (...);
+COMMIT;
+
+<span class="comment"># Database safety net</span>
+UNIQUE (slot_id)
+WHERE status = 'confirmed'</code></pre>
+          <p class="info-footnote">
+            Independent connections. Serialized writes. A partial unique index
+            as the final guard.
+          </p>
+        </section>
+
+        <section class="panel info-panel features-panel">
+          <h2>
+            <svg class="section-icon"><use href="#i-star" /></svg>Key Features
+          </h2>
+          <ul class="check-list">
+            <li>RESTful API with meaningful HTTP status codes</li>
+            <li>Clear input validation and consistent errors</li>
+            <li>Database protection against double bookings</li>
+            <li>Safe, repeatable cancellations</li>
+            <li>Separate routes, services and models</li>
+            <li>Automated tests for critical booking rules</li>
+          </ul>
+          <a
+            class="text-link"
+            href="https://github.com/paidadharshitha/clinic-booking-api/actions"
+            target="_blank"
+            rel="noopener noreferrer"
+            >View test runs on GitHub <svg><use href="#i-arrow" /></svg
+          ></a>
+        </section>
+
+        <section
+          class="panel community-panel"
+          aria-labelledby="community-title"
+        >
+          <div class="community-icon" aria-hidden="true">
+            <svg class="community-calendar"><use href="#i-calendar" /></svg
+            ><span class="plus">+</span
+            ><svg class="community-heart"><use href="#i-heart" /></svg>
+          </div>
+          <h2 id="community-title">
+            Healthy People<br />Build Healthier Communities
+          </h2>
+          <p>Simple. Reliable. Thoughtfully built.</p>
+        </section>
+
+        <div class="project-note">
+          <svg><use href="#i-code" /></svg>
+          <p>
+            A working API playground for the clinic booking assessment. Use
+            synthetic patient details; authentication is outside this demo’s
+            scope.
+          </p>
+        </div>
+        <a
+          class="repository-link"
+          href="https://github.com/paidadharshitha/clinic-booking-api"
+          target="_blank"
+          rel="noopener noreferrer"
+          >View source on GitHub <svg><use href="#i-arrow" /></svg
+        ></a>
+      </aside>
+    </main>
+    <footer class="page-footer">
+      <span>Clinic Appointment Booking API</span
+      ><span
+        >Built with FastAPI &amp; SQLite <span aria-hidden="true">·</span>
+        <a href="/docs">API documentation</a></span
+      >
+    </footer>
+    <noscript
+      ><p class="noscript-note">
+        Enable JavaScript to try live requests. You can still read the guide or
+        use the API from your terminal.
+      </p></noscript
+    >
+  </body>
+</html>

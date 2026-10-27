@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/paidadharshitha/clinic-booking-api/actions/workflows/ci.yml/badge.svg)](https://github.com/paidadharshitha/clinic-booking-api/actions/workflows/ci.yml)
 
-A FastAPI service and visual interactive guide for publishing clinic appointment slots and booking them safely. SQLite transactions coordinate competing requests, and a database constraint guarantees **at most one confirmed booking per slot**.
+A FastAPI service with a simple booking portal for publishing clinic appointment slots and booking them safely. SQLite transactions coordinate competing requests, and a database constraint guarantees **at most one confirmed booking per slot**. A separate developer playground demonstrates the API's requests, responses, and concurrency protection.
 
 Python 3.11+ · FastAPI · SQLAlchemy 2.x · Pydantic · SQLite · pytest / HTTPX
 
@@ -20,11 +20,19 @@ python -m pip install --no-deps -e .
 uvicorn clinic_api.main:app --reload
 ```
 
-Open the [visual interactive guide](http://localhost:8000/) to explore the booking flow and make live requests. [Swagger API docs](http://localhost:8000/docs), [ReDoc](http://localhost:8000/redoc), and the [OpenAPI schema](http://localhost:8000/openapi.json) remain available.
+Open the [booking portal](http://localhost:8000/) to use the application with ordinary forms:
 
-The guide's live actions use the same API and database as other clients. Created clinics, slots, and bookings persist after refreshing the page or restarting the server; use synthetic patient details while trying it. The database and its parent directory are created automatically on startup.
+- **Manage clinic:** create a clinic, publish future appointment times, review bookings, and cancel slots or bookings.
+- **Book appointment:** choose a clinic and an available time, then enter a patient name and email to confirm the booking.
+- **My appointments:** look up bookings by the email used to book, and cancel an appointment when needed.
 
-The guide's HTML, CSS, JavaScript, and Nunito Sans font are bundled with the Python package. The font's [SIL Open Font License](clinic_api/static/OFL-NunitoSans.txt) is included.
+On a new database, start with **Manage clinic** to create the first clinic and publish a slot. The portal uses the browser's local timezone for date/time controls and converts values to UTC for the API. Email lookup and the clinic management view are demonstration workflows, not authenticated identities or access controls.
+
+The [API playground](http://localhost:8000/guide) retains editable JSON examples and a live concurrent-booking check. [Swagger API docs](http://localhost:8000/docs), [ReDoc](http://localhost:8000/redoc), and the [OpenAPI schema](http://localhost:8000/openapi.json) remain available.
+
+Both interfaces use the same API and database as other clients. Created clinics, slots, and bookings persist after refreshing the page or restarting the server; use synthetic patient details while trying them. The database and its parent directory are created automatically on startup. Opening the portal does not create demonstration records automatically.
+
+The portal and playground's HTML, CSS, JavaScript, and Nunito Sans font are bundled with the Python package. The font's [SIL Open Font License](clinic_api/static/OFL-NunitoSans.txt) is included.
 
 New databases use the SQLAlchemy schema. Existing version 1 databases are upgraded transactionally to version 2, adding the optional address and patient contact fields while preserving IDs, timestamps, and booking history. No separate initialization command is needed.
 
@@ -44,7 +52,7 @@ See [.env.example](.env.example) for configuration. The application reads enviro
 docker compose up --build
 ```
 
-The guide and API run at `http://localhost:8000` as a non-root user. The named volume `clinic-booking-data` persists `/app/data/bookings.db` across container replacements. Stop it with `docker compose down`; adding `--volumes` also deletes the stored appointments.
+The portal and API run at `http://localhost:8000` as a non-root user. The named volume `clinic-booking-data` persists `/app/data/bookings.db` across container replacements. Stop it with `docker compose down`; adding `--volumes` also deletes the stored appointments.
 
 ## Booking rules
 
@@ -266,7 +274,7 @@ clinic_api/
     bookings.py Booking creation, filtering, and cancellation
   services/
     booking_service.py  Booking rules and transactional operations
-  static/       Packaged HTML, CSS, and JavaScript for the guide at /
+  static/       Packaged portal at / and developer playground at /guide
 tests/          API, persistence, and concurrency tests
 ```
 

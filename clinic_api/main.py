@@ -81,8 +81,12 @@ def create_app(
     application.mount("/assets", StaticFiles(directory=static_directory), name="assets")
 
     @application.get("/", response_class=FileResponse, include_in_schema=False)
-    def interactive_guide() -> FileResponse:
+    def booking_portal() -> FileResponse:
         return FileResponse(static_directory / "index.html", media_type="text/html")
+
+    @application.get("/guide", response_class=FileResponse, include_in_schema=False)
+    def interactive_guide() -> FileResponse:
+        return FileResponse(static_directory / "guide.html", media_type="text/html")
 
     @application.exception_handler(DomainError)
     async def handle_domain_error(request: Request, error: DomainError) -> JSONResponse:
