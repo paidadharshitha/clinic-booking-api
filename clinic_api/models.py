@@ -1,152 +1,103 @@
-"""Request validation and public response contracts."""
+"""SQLAlchemy models and database-enforced appointment invariants."""
 
-import re
-import unicodedata
 from datetime import UTC, datetime
-from typing import Annotated, Literal, Self
-from uuid import UUID
 
-from pydantic import (
-    AfterValidator,
-    AwareDatetime,
-    BaseModel,
-    BeforeValidator,
-    ConfigDict,
-    Field,
-    StringConstraints,
-    field_validator,
-    model_validator,
-)
+from sqlalchemy import CheckConstraint, ForeignKey, Index, String, Text, text
+from sqlalchemy.engine import Dialect
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.types import TypeDecorator
 
 
-def require_datetime_string(value: object) -> object:
-    # Reject epoch numbers and dates without a time; clients must include a timezone.
-    if isinstance(value, datetime):
-        return value
-    if not isinstance(value, str) or not re.fullmatch(
-        r"\d{4}-\d{2}-\d{2}[Tt]\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:[Zz]|[+-]\d{2}:\d{2})",
-        value,
-    ):
-        raise ValueError(
-            "Use an RFC 3339 timestamp with a timezone and at most 6 fractional digits, "
-            "for example 2030-06-01T09:00:00Z."
-        )
-    return value
+class UTCDateTime(TypeDecorator[datetime]):
+    """Preserve timezone and ordering, including timestamps in version-1 databases."""
+
+    impl = Text
+    cache_ok = True
+
+    def process_bind_param(self, value: datetime | None, dialect: Dialect) -> str | None:
+        if value is None:
+            return None
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("Database timestamps must include a timezone.")
+        return value.astimezone(UTC).isoformat(timespec="microseconds").replace("+00:00", "Z")
+
+    def process_result_value(self, value: str | None, dialect: Dialect) -> datetime | None:
+        return datetime.fromisoformat(value).astimezone(UTC) if value is not None else None
 
 
-def normalize_timestamp(value: datetime) -> datetime:
-    try:
-        return value.astimezone(UTC)
-    except (OverflowError, ValueError) as error:
-        raise ValueError(
-            "Timestamp must remain within years 0001–9999 when converted to UTC."
-        ) from error
+class Base(DeclarativeBase):
+    pass
 
 
-Timestamp = Annotated[
-    AwareDatetime, BeforeValidator(require_datetime_string), AfterValidator(normalize_timestamp)
-]
-Availability = Literal["available", "booked", "cancelled", "expired"]
-MAX_OFFSET = 2**31 - 1
+class Clinic(Base):
+    __tablename__ = "clinics"
+    __table_args__ = (
+        CheckConstraint("length(trim(name)) BETWEEN 1 AND 120", name="valid_clinic_name"),
+        Index("clinics_by_creation", "created_at", "id"),
+    )
+
+    # String UUIDs retain the hyphens used by the original public API and database.
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    name: Mapped[str] = mapped_column(String(120))
+    address: Mapped[str | None] = mapped_column(String(300))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    slots: Mapped[list["Slot"]] = relationship(back_populates="clinic")
 
 
-class RequestModel(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class Slot(Base):
+    __tablename__ = "slots"
+    __table_args__ = (
+        CheckConstraint("ends_at > starts_at", name="positive_slot_duration"),
+        CheckConstraint("status IN ('active', 'cancelled')", name="valid_slot_status"),
+        CheckConstraint(
+            "(status = 'active' AND cancelled_at IS NULL) OR "
+            "(status = 'cancelled' AND cancelled_at IS NOT NULL)",
+            name="consistent_slot_cancellation",
+        ),
+        Index("slots_by_clinic_and_time", "clinic_id", "starts_at", "id"),
+        Index("slots_by_time", "starts_at", "id"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    clinic_id: Mapped[str] = mapped_column(ForeignKey("clinics.id"))
+    starts_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    ends_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    status: Mapped[str] = mapped_column(String(20), default="active", server_default="active")
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    cancelled_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    clinic: Mapped[Clinic] = relationship(back_populates="slots")
+    bookings: Mapped[list["Booking"]] = relationship(back_populates="slot")
 
 
-class ClinicCreate(RequestModel):
-    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
+class Booking(Base):
+    __tablename__ = "bookings"
+    __table_args__ = (
+        CheckConstraint("status IN ('confirmed', 'cancelled')", name="valid_booking_status"),
+        CheckConstraint(
+            "(status = 'confirmed' AND cancelled_at IS NULL) OR "
+            "(status = 'cancelled' AND cancelled_at IS NOT NULL)",
+            name="consistent_booking_cancellation",
+        ),
+        # This protects capacity even if a future code path bypasses the service.
+        Index(
+            "one_confirmed_booking_per_slot",
+            "slot_id",
+            unique=True,
+            sqlite_where=text("status = 'confirmed'"),
+        ),
+        Index("bookings_by_creation", "created_at", "id"),
+        Index("bookings_by_slot_and_creation", "slot_id", "created_at", "id"),
+        Index("bookings_by_patient", "patient_id", "created_at", "id"),
+        Index("bookings_by_email", "patient_email", "created_at", "id"),
+    )
 
-    @field_validator("name")
-    @classmethod
-    def reject_control_characters(cls, value: str) -> str:
-        if any(unicodedata.category(char) in {"Cc", "Cs"} for char in value):
-            raise ValueError("Clinic names cannot contain control characters or invalid Unicode.")
-        return value
-
-
-class Clinic(BaseModel):
-    id: UUID
-    name: str
-    created_at: AwareDatetime
-
-
-class SlotCreate(RequestModel):
-    clinic_id: UUID
-    starts_at: Timestamp
-    ends_at: Timestamp
-
-    @model_validator(mode="after")
-    def validate_interval(self) -> Self:
-        if self.ends_at <= self.starts_at:
-            raise ValueError("ends_at must be later than starts_at.")
-        return self
-
-
-class Slot(BaseModel):
-    id: UUID
-    clinic_id: UUID
-    starts_at: AwareDatetime
-    ends_at: AwareDatetime
-    status: Literal["active", "cancelled"]
-    availability: Availability
-    created_at: AwareDatetime
-    cancelled_at: AwareDatetime | None
-
-
-class BookingCreate(RequestModel):
-    patient_id: UUID
-
-
-class Booking(BaseModel):
-    id: UUID
-    slot_id: UUID
-    patient_id: UUID
-    status: Literal["confirmed", "cancelled"]
-    created_at: AwareDatetime
-    cancelled_at: AwareDatetime | None
-
-
-class SlotFilters(RequestModel):
-    clinic_id: UUID | None = None
-    availability: Availability | None = None
-    starts_from: Timestamp | None = None
-    starts_before: Timestamp | None = None
-    limit: Annotated[int, Field(ge=1, le=100)] = 20
-    offset: Annotated[int, Field(ge=0, le=MAX_OFFSET)] = 0
-
-    @model_validator(mode="after")
-    def validate_range(self) -> Self:
-        if self.starts_from and self.starts_before and self.starts_before <= self.starts_from:
-            raise ValueError("starts_before must be later than starts_from.")
-        return self
-
-
-class SlotPage(BaseModel):
-    items: list[Slot]
-    limit: int
-    offset: int
-    has_more: bool
-
-
-class ClinicPage(BaseModel):
-    items: list[Clinic]
-    limit: int
-    offset: int
-    has_more: bool
-
-
-class ErrorDetail(BaseModel):
-    field: str
-    message: str
-    type: str
-
-
-class ErrorBody(BaseModel):
-    code: str
-    message: str
-    details: list[ErrorDetail] = Field(default_factory=list)
-
-
-class ErrorResponse(BaseModel):
-    error: ErrorBody
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    slot_id: Mapped[str] = mapped_column(ForeignKey("slots.id"))
+    patient_id: Mapped[str] = mapped_column(String(36))
+    # Nullable for historical bookings and the original UUID-only endpoint.
+    patient_name: Mapped[str | None] = mapped_column(String(120))
+    patient_email: Mapped[str | None] = mapped_column(String(254))
+    status: Mapped[str] = mapped_column(String(20), default="confirmed", server_default="confirmed")
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    cancelled_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    slot: Mapped[Slot] = relationship(back_populates="bookings")

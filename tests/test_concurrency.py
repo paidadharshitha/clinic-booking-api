@@ -7,13 +7,14 @@ and describing them as a concurrency test. All apps share a real database file.
 import multiprocessing
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
-from contextlib import ExitStack, closing, contextmanager
+from contextlib import ExitStack, closing
 from datetime import UTC, datetime
 from threading import Barrier, Event
 from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import event
 
 from clinic_api.main import create_app
 
@@ -235,23 +236,15 @@ def test_exhausted_write_lock_returns_retryable_error_and_no_partial_write(
 @pytest.mark.concurrency
 @pytest.mark.parametrize("operation", ["book", "publish"])
 def test_slot_start_time_is_rechecked_after_waiting_for_writer_lock(
-    app, client, database_path, slot, clock, patient_id, monkeypatch, operation
+    app, client, database_path, slot, clock, patient_id, operation
 ):
     about_to_acquire_lock = Event()
-    original_connection = app.state.database.connection
 
-    @contextmanager
-    def traced_connection():
-        with original_connection() as connection:
+    def before_execute(connection, cursor, statement, parameters, context, executemany):
+        if statement == "BEGIN IMMEDIATE":
+            about_to_acquire_lock.set()
 
-            def trace(statement):
-                if statement == "BEGIN IMMEDIATE":
-                    about_to_acquire_lock.set()
-
-            connection.set_trace_callback(trace)
-            yield connection
-
-    monkeypatch.setattr(app.state.database, "connection", traced_connection)
+    event.listen(app.state.database.engine, "before_cursor_execute", before_execute)
 
     if operation == "book":
         path = f"/slots/{slot['id']}/bookings"
@@ -262,21 +255,53 @@ def test_slot_start_time_is_rechecked_after_waiting_for_writer_lock(
         body = {key: slot[key] for key in ("clinic_id", "starts_at", "ends_at")}
         expected_status, expected_code = 422, "SLOT_IN_PAST"
 
-    with closing(sqlite3.connect(database_path, isolation_level=None)) as writer:
-        writer.execute("BEGIN IMMEDIATE")
-        with ThreadPoolExecutor(max_workers=1) as pool:
-            future = pool.submit(client.post, path, json=body)
-            try:
-                # The SQL trace marks the exact acquisition attempt. The external
-                # writer still holds the real lock, so this request cannot yet
-                # read state. Advance time before releasing it, without sleeps.
-                assert about_to_acquire_lock.wait(timeout=5)
-                clock.advance(hours=1)
-            finally:
-                writer.rollback()
-            response = future.result(timeout=10)
+    try:
+        with closing(sqlite3.connect(database_path, isolation_level=None)) as writer:
+            writer.execute("BEGIN IMMEDIATE")
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                future = pool.submit(client.post, path, json=body)
+                try:
+                    # SQLAlchemy signals the acquisition attempt while the external
+                    # writer still holds the real lock. Advance time before releasing
+                    # it, without sleeps or a replacement transaction implementation.
+                    assert about_to_acquire_lock.wait(timeout=5)
+                    clock.advance(hours=1)
+                finally:
+                    writer.rollback()
+                response = future.result(timeout=10)
+    finally:
+        event.remove(app.state.database.engine, "before_cursor_execute", before_execute)
 
     assert response.status_code == expected_status, response.text
     assert response.json()["error"]["code"] == expected_code
     assert active_booking_count(database_path, slot["id"]) == 0
     assert [row["id"] for row in client.get("/slots").json()["items"]] == [slot["id"]]
+
+
+@pytest.mark.concurrency
+def test_canonical_booking_requests_race_across_independent_apps(database_path, slot, clock):
+    barrier = Barrier(2, timeout=10)
+    with ExitStack() as stack:
+        clients = [
+            stack.enter_context(TestClient(create_app(database_path, clock=clock)))
+            for _ in range(2)
+        ]
+
+        def book(index):
+            barrier.wait()
+            return clients[index].post(
+                "/bookings",
+                json={
+                    "slot_id": slot["id"],
+                    "patient_name": f"Patient {index}",
+                    "patient_email": f"patient{index}@example.com",
+                },
+            )
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            responses = list(pool.map(book, range(2)))
+
+    assert sorted(response.status_code for response in responses) == [201, 409]
+    conflict = next(response for response in responses if response.status_code == 409)
+    assert conflict.json()["error"]["code"] == "SLOT_ALREADY_BOOKED"
+    assert active_booking_count(database_path, slot["id"]) == 1

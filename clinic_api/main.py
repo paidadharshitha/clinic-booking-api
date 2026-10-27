@@ -15,8 +15,8 @@ from starlette.exceptions import HTTPException
 from clinic_api.api import router
 from clinic_api.database import Database
 from clinic_api.errors import DomainError
-from clinic_api.models import ErrorBody, ErrorDetail, ErrorResponse
-from clinic_api.service import BookingService, utc_now
+from clinic_api.schemas import ErrorBody, ErrorDetail, ErrorResponse
+from clinic_api.services.booking_service import BookingService, utc_now
 
 logger = logging.getLogger(__name__)
 
@@ -49,11 +49,14 @@ def create_app(
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         database.initialize()
-        yield
+        try:
+            yield
+        finally:
+            database.dispose()
 
     application = FastAPI(
         title="Clinic Booking API",
-        version="1.0.0",
+        version="2.0.0",
         description=(
             "Publish clinic appointment slots, book them atomically, and cancel safely. "
             "Every timestamp includes a timezone; responses use UTC. "
@@ -65,6 +68,10 @@ def create_app(
             {"name": "Slots", "description": "Publish, find, and cancel appointment slots."},
             {"name": "Bookings", "description": "Book a slot and manage its booking."},
             {"name": "Health", "description": "Service and database readiness."},
+            {
+                "name": "Compatibility",
+                "description": "Original endpoints retained for existing clients.",
+            },
         ],
     )
     application.state.database = database
@@ -115,7 +122,7 @@ def create_app(
     )
     def health() -> dict[str, str]:
         with database.connection() as connection:
-            connection.execute("SELECT 1 FROM clinics LIMIT 1")
+            connection.exec_driver_sql("SELECT 1 FROM clinics LIMIT 1")
         return {"status": "ok"}
 
     application.include_router(router)

@@ -1,8 +1,10 @@
 """Deterministic checks for bounded retry during concurrent first startup."""
 
+import sqlite3
 from dataclasses import dataclass, field
 
 import pytest
+from sqlalchemy.exc import OperationalError
 
 import clinic_api.database as database_module
 from clinic_api.database import Database
@@ -41,8 +43,8 @@ def test_startup_retries_transient_busy_then_initializes_schema(database_path, m
     assert len(attempts) == 2
     assert 0 < fake_time.now <= database.timeout
     with database.connection() as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1
-        assert connection.execute("SELECT count(*) FROM clinics").fetchone()[0] == 0
+        assert connection.exec_driver_sql("PRAGMA user_version").fetchone()[0] == 2
+        assert connection.exec_driver_sql("SELECT count(*) FROM clinics").fetchone()[0] == 0
 
 
 def test_startup_stops_retrying_when_busy_deadline_expires(database_path, monkeypatch):
@@ -84,3 +86,24 @@ def test_startup_does_not_retry_unrelated_failures(database_path, monkeypatch, e
 
     assert failure.value is error
     assert fake_time.sleeps == []
+
+
+def test_database_failure_returns_safe_retryable_api_error(app, client, monkeypatch):
+    def unavailable():
+        raise OperationalError(
+            "SELECT private_data FROM internal_table",
+            {"patient_email": "private@example.com"},
+            sqlite3.OperationalError("disk I/O error"),
+        )
+
+    with monkeypatch.context() as context:
+        context.setattr(app.state.database.engine, "connect", unavailable)
+        response = client.get("/health")
+
+    assert response.status_code == 503, response.text
+    assert response.json()["error"]["code"] == "DATABASE_UNAVAILABLE"
+    assert response.headers["retry-after"] == "1"
+    assert "private" not in response.text
+    assert "internal_table" not in response.text
+    assert "disk I/O" not in response.text
+    assert client.get("/health").json() == {"status": "ok"}
